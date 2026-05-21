@@ -1,0 +1,83 @@
+---
+const navLinks = [
+  { label: 'How it works', href: '#how-it-works' },
+  { label: 'Suburbs', href: '#suburbs' },
+  { label: 'Pricing', href: '#why-175' },
+  { label: 'Book', href: '#book' },
+];
+---
+
+<section
+  id="top"
+  class="relative min-h-screen w-full bg-green-matte text-white flex flex-col"
+>
+  <!-- Nav -->
+  <header class="w-full">
+    <nav
+      class="mx-auto flex w-full max-w-[1280px] items-center justify-between px-6 py-6 md:px-10 md:py-8"
+      aria-label="Primary"
+    >
+      <a
+        href="#top"
+        class="font-display text-xl md:text-2xl tracking-tight text-white"
+      >
+        The Gutter Run
+      </a>
+
+      <ul class="hidden md:flex items-center gap-8 font-sans text-sm">
+        {
+          navLinks.map((link) => (
+            <li>
+              <a
+                href={link.href}
+                class="text-white/85 hover:text-white transition-colors duration-200"
+              >
+                {link.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <a
+        href="#book"
+        class="md:hidden font-sans text-sm text-white/90 underline-offset-4 hover:underline"
+      >
+        Book
+      </a>
+    </nav>
+  </header>
+
+  <!-- Hero body -->
+  <div class="flex-1 flex items-center">
+    <div class="mx-auto w-full max-w-[1280px] px-6 md:px-10 pt-8 pb-20 md:pt-16 md:pb-28">
+      <p class="eyebrow text-green-tint">
+        Central Coast · Single-storey specialists
+      </p>
+
+      <h1 class="mt-8 md:mt-10 font-display font-normal text-hero text-white">
+        A fair price,<br />
+        <span class="italic">on your suburb's day.</span>
+      </h1>
+
+      <p class="mt-8 md:mt-10 max-w-2xl font-sans text-lg md:text-xl text-white/85 leading-relaxed">
+        $175 per house. Five houses a day, done properly. Photo proof included.
+      </p>
+
+      <div class="mt-10 md:mt-12 flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-8">
+        <a
+          href="#suburbs"
+          class="inline-flex items-center justify-center rounded-full bg-white px-7 py-4 font-sans font-medium text-green-deep transition-transform duration-200 hover:-translate-y-[2px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-green-matte"
+        >
+          Find your suburb's day →
+        </a>
+        <a
+          href="#how-it-works"
+          class="font-sans text-white/90 underline-offset-[6px] decoration-white/40 hover:decoration-white hover:text-white underline transition-colors duration-200"
+        >
+          See how it works
+        </a>
+      </div>
+    </div>
+  </div>
+</section>

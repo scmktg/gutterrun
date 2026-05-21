@@ -1,0 +1,34 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = "The Gutter Run — A fair price, on your suburb's day.",
+  description = "Single-storey gutter cleaning on the NSW Central Coast. $175 per house. Tuggerah Mondays, Wyong Tuesdays, The Entrance Wednesdays. Photo proof within 24 hours.",
+} = Astro.props;
+
+import '../styles/global.css';
+---
+
+<!doctype html>
+<html lang="en-AU">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#2F4A3A" />
+    <title>{title}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;1,9..144,400;1,9..144,500&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

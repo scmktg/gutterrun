@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-white text-ink font-sans font-normal antialiased;
+  }
+  ::selection {
+    background: #2F4A3A;
+    color: #FFFFFF;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply font-mono uppercase text-eyebrow;
+  }
+}
