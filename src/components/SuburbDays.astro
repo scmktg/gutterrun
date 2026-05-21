@@ -1,0 +1,68 @@
+---
+import { getAvailability, PRICE_AUD, DAILY_CAP } from '../lib/availability';
+const availability = await getAvailability();
+---
+
+<section id="suburbs" class="bg-white text-ink">
+  <div class="mx-auto w-full max-w-[1280px] px-6 md:px-10 pb-24 md:pb-32">
+    <p class="eyebrow text-ink/60">Book your suburb's day</p>
+    <h2 class="mt-6 md:mt-8 font-display font-normal text-headline text-green-deep max-w-3xl">
+      Three suburbs.<br />
+      <span class="italic">Three days a week.</span>
+    </h2>
+
+    <div
+      class="mt-14 md:mt-20 grid grid-cols-1 md:grid-cols-3 gap-px bg-hairline border border-hairline"
+      data-suburb-grid
+    >
+      {
+        availability.map((s) => {
+          const next = s.next;
+          return (
+            <article
+              class="group bg-white p-8 md:p-10 flex flex-col transition-transform duration-200 hover:-translate-y-[2px]"
+              data-suburb-card={s.slug}
+            >
+              <p class="eyebrow text-ink/60">{s.dayLabel}</p>
+
+              <h3 class="mt-6 font-display font-normal text-4xl md:text-5xl text-green-deep tracking-tight">
+                {s.name}
+              </h3>
+
+              <div class="mt-10 flex items-baseline gap-3">
+                <span
+                  class="font-display italic font-normal text-green-deep leading-none"
+                  style="font-size: clamp(3rem, 5vw, 4.25rem);"
+                >
+                  ${PRICE_AUD}
+                </span>
+                <span class="eyebrow text-ink/60">per house</span>
+              </div>
+
+              <p class="mt-10 font-sans text-sm text-ink/70 leading-relaxed" data-next-line>
+                {
+                  next ? (
+                    <>
+                      Next available: <span class="text-ink">{next.label}</span> ·{' '}
+                      <span class="text-ink">{next.spotsLeft}</span> of {DAILY_CAP} spots left
+                    </>
+                  ) : (
+                    <span class="text-ink">Fully booked for the next few weeks — try again soon.</span>
+                  )
+                }
+              </p>
+
+              <a
+                href={`#book?suburb=${s.slug}`}
+                data-book-link={s.slug}
+                class="mt-8 inline-flex items-center font-sans text-green-matte underline underline-offset-[6px] decoration-green-matte/30 hover:decoration-green-matte transition-colors duration-200"
+              >
+                Book this day →
+              </a>
+            </article>
+          );
+        })
+      }
+    </div>
+  </div>
+</section>

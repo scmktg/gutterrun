@@ -1,13 +1,25 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Hero from '../components/Hero.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import SuburbDays from '../components/SuburbDays.astro';
+import WhyOneSeventyFive from '../components/WhyOneSeventyFive.astro';
+import WhatYouGet from '../components/WhatYouGet.astro';
+import BookingSection from '../components/BookingSection.astro';
+import Footer from '../components/Footer.astro';
+
+// Server-render so suburb cards + the booking form's date dropdown always
+// show fresh availability. Cheap (the page is tiny) and avoids a flash of
+// stale prerendered dates.
+export const prerender = false;
 ---
 
 <Layout>
   <Hero />
-  <!-- TODO: Section 02 — How it works -->
-  <!-- TODO: Section 03 — Suburb days -->
-  <!-- TODO: Section 04 — Why $175 -->
-  <!-- TODO: Section 05 — What you get -->
-  <!-- TODO: Section 06 — Book / contact -->
+  <HowItWorks />
+  <SuburbDays />
+  <WhyOneSeventyFive />
+  <WhatYouGet />
+  <BookingSection />
+  <Footer />
 </Layout>

@@ -8,3 +8,7 @@ dist
 .vercel
 .netlify
 .cache
+
+# Runtime booking data (the JSON-file persistence is a placeholder for a
+# real backend — see src/lib/availability.ts).
+src/data/bookings.json

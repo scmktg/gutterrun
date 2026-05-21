@@ -1,0 +1,325 @@
+---
+import { getAvailability } from '../lib/availability';
+const availability = await getAvailability();
+// Serialise initial availability so the client form can populate the date
+// dropdown without an extra round-trip.
+const initialAvailabilityJson = JSON.stringify(availability);
+---
+
+<section id="book" class="bg-green-matte text-white">
+  <div class="mx-auto w-full max-w-[1280px] px-6 md:px-10 py-24 md:py-32">
+    <h2 class="font-display font-normal text-headline text-white max-w-3xl">
+      Ready to book your suburb's day?
+    </h2>
+
+    <div class="mt-14 md:mt-20 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-20">
+      <form
+        id="booking-form"
+        class="space-y-7 max-w-xl"
+        novalidate
+        data-availability={initialAvailabilityJson}
+      >
+        <div>
+          <label for="bf-name" class="eyebrow text-green-tint block">Name</label>
+          <input
+            id="bf-name"
+            name="name"
+            type="text"
+            autocomplete="name"
+            required
+            class="mt-3 w-full bg-white text-ink font-sans px-5 py-4 border border-transparent rounded-none focus:outline-none focus:border-green-deep transition-colors duration-200"
+          />
+        </div>
+
+        <div>
+          <label for="bf-address" class="eyebrow text-green-tint block">Street address</label>
+          <input
+            id="bf-address"
+            name="address"
+            type="text"
+            autocomplete="street-address"
+            required
+            class="mt-3 w-full bg-white text-ink font-sans px-5 py-4 border border-transparent rounded-none focus:outline-none focus:border-green-deep transition-colors duration-200"
+          />
+        </div>
+
+        <div>
+          <label for="bf-suburb" class="eyebrow text-green-tint block">Suburb</label>
+          <select
+            id="bf-suburb"
+            name="suburb"
+            required
+            class="mt-3 w-full bg-white text-ink font-sans px-5 py-4 border border-transparent rounded-none focus:outline-none focus:border-green-deep transition-colors duration-200 appearance-none"
+          >
+            <option value="">Choose your suburb…</option>
+            <option value="tuggerah">Tuggerah · Mondays</option>
+            <option value="wyong">Wyong · Tuesdays</option>
+            <option value="the-entrance">The Entrance · Wednesdays</option>
+          </select>
+          <p class="mt-3 font-sans text-sm text-white/70 leading-relaxed">
+            Outside these three suburbs? Tell us — we're adding more days as we grow.
+          </p>
+        </div>
+
+        <div>
+          <label for="bf-date" class="eyebrow text-green-tint block">Preferred date</label>
+          <select
+            id="bf-date"
+            name="date"
+            required
+            disabled
+            class="mt-3 w-full bg-white text-ink font-sans px-5 py-4 border border-transparent rounded-none focus:outline-none focus:border-green-deep transition-colors duration-200 appearance-none disabled:opacity-60"
+          >
+            <option value="">Choose a suburb first…</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="bf-phone" class="eyebrow text-green-tint block">Phone</label>
+          <input
+            id="bf-phone"
+            name="phone"
+            type="tel"
+            autocomplete="tel"
+            inputmode="tel"
+            required
+            class="mt-3 w-full bg-white text-ink font-sans px-5 py-4 border border-transparent rounded-none focus:outline-none focus:border-green-deep transition-colors duration-200"
+          />
+        </div>
+
+        <p
+          id="bf-error"
+          class="hidden font-sans text-sm text-white bg-green-deep/60 border border-white/30 px-4 py-3"
+          role="alert"
+        >
+        </p>
+
+        <div class="pt-2">
+          <button
+            type="submit"
+            id="bf-submit"
+            class="inline-flex items-center justify-center rounded-full bg-white px-7 py-4 font-sans font-medium text-green-deep transition-transform duration-200 hover:-translate-y-[2px] focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-green-matte disabled:opacity-60 disabled:hover:translate-y-0"
+          >
+            <span data-submit-label>Send my booking request →</span>
+          </button>
+        </div>
+
+        <p class="font-sans text-sm text-white/70 leading-relaxed">
+          We'll text you back within 24 hours to confirm. No call centre, no spam.
+        </p>
+      </form>
+
+      <!-- Confirmation state — hidden until a booking succeeds. -->
+      <aside
+        id="booking-confirmation"
+        class="hidden self-start border border-white/20 p-8 md:p-10"
+        aria-live="polite"
+      >
+        <p class="eyebrow text-green-tint">Booking received</p>
+        <p
+          class="mt-6 font-display font-normal text-3xl md:text-4xl text-white tracking-tight"
+          data-confirmation-headline
+        >
+          Thanks <span data-confirmation-name>—</span>.
+        </p>
+        <p class="mt-6 font-sans text-lg text-white/85 leading-relaxed">
+          We've got you down for <span class="text-white" data-confirmation-suburb>—</span>
+          on <span class="text-white" data-confirmation-date>—</span>.
+        </p>
+        <p class="mt-4 font-sans text-white/70 leading-relaxed">
+          We'll send a text to confirm within 24 hours. Photos in your inbox within 24 hours of the clean.
+        </p>
+        <button
+          type="button"
+          data-confirmation-reset
+          class="mt-8 font-sans text-white/85 underline underline-offset-[6px] decoration-white/40 hover:decoration-white hover:text-white transition-colors duration-200"
+        >
+          Book another →
+        </button>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Booking form: suburb → date dropdown, validation, real POST to /api/book,
+  // inline confirmation. The initial availability is embedded in
+  // data-availability; after a successful booking the server returns fresh
+  // availability and we refresh the dropdown + suburb cards from it.
+
+  type AvailableDate = { iso: string; label: string; spotsLeft: number };
+  type SuburbAvailability = {
+    slug: 'tuggerah' | 'wyong' | 'the-entrance';
+    name: string;
+    dayLabel: string;
+    dates: AvailableDate[];
+    next: AvailableDate | null;
+  };
+
+  const form = document.getElementById('booking-form') as HTMLFormElement | null;
+  if (form) {
+    const initial = JSON.parse(form.dataset.availability ?? '[]') as SuburbAvailability[];
+    let availability: SuburbAvailability[] = initial;
+
+    const suburbEl = document.getElementById('bf-suburb') as HTMLSelectElement;
+    const dateEl = document.getElementById('bf-date') as HTMLSelectElement;
+    const errEl = document.getElementById('bf-error') as HTMLElement;
+    const submitBtn = document.getElementById('bf-submit') as HTMLButtonElement;
+    const submitLabel = submitBtn.querySelector('[data-submit-label]') as HTMLElement;
+    const confirmEl = document.getElementById('booking-confirmation') as HTMLElement;
+
+    function populateDates(slug: string) {
+      const suburb = availability.find((s) => s.slug === slug);
+      dateEl.innerHTML = '';
+      if (!suburb) {
+        dateEl.disabled = true;
+        const opt = document.createElement('option');
+        opt.value = '';
+        opt.textContent = 'Choose a suburb first…';
+        dateEl.append(opt);
+        return;
+      }
+      dateEl.disabled = false;
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = 'Pick a date…';
+      dateEl.append(placeholder);
+      for (const d of suburb.dates) {
+        const opt = document.createElement('option');
+        opt.value = d.iso;
+        const spots =
+          d.spotsLeft === 0
+            ? 'fully booked'
+            : `${d.spotsLeft} of 5 spots left`;
+        opt.textContent = `${d.label} · ${spots}`;
+        if (d.spotsLeft === 0) opt.disabled = true;
+        dateEl.append(opt);
+      }
+    }
+
+    function updateSuburbCards() {
+      const cards = document.querySelectorAll<HTMLElement>('[data-suburb-card]');
+      cards.forEach((card) => {
+        const slug = card.dataset.suburbCard;
+        const suburb = availability.find((s) => s.slug === slug);
+        if (!suburb) return;
+        const line = card.querySelector<HTMLElement>('[data-next-line]');
+        if (!line) return;
+        const next = suburb.next;
+        if (next) {
+          line.innerHTML = `Next available: <span class="text-ink">${next.label}</span> · <span class="text-ink">${next.spotsLeft}</span> of 5 spots left`;
+        } else {
+          line.innerHTML = `<span class="text-ink">Fully booked for the next few weeks — try again soon.</span>`;
+        }
+      });
+    }
+
+    function showError(msg: string) {
+      errEl.textContent = msg;
+      errEl.classList.remove('hidden');
+    }
+    function clearError() {
+      errEl.textContent = '';
+      errEl.classList.add('hidden');
+    }
+
+    suburbEl.addEventListener('change', () => {
+      populateDates(suburbEl.value);
+      clearError();
+    });
+
+    // Suburb-card "Book this day" links pre-select the suburb and scroll.
+    document.querySelectorAll<HTMLAnchorElement>('[data-book-link]').forEach((link) => {
+      link.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const slug = link.dataset.bookLink ?? '';
+        suburbEl.value = slug;
+        populateDates(slug);
+        const target = document.getElementById('book');
+        target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.setTimeout(() => suburbEl.focus(), 600);
+      });
+    });
+
+    // Live refresh on page load — in case bookings were made elsewhere.
+    fetch('/api/availability')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (data?.availability) {
+          availability = data.availability;
+          updateSuburbCards();
+          if (suburbEl.value) populateDates(suburbEl.value);
+        }
+      })
+      .catch(() => {});
+
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      clearError();
+
+      const fd = new FormData(form);
+      const payload = {
+        name: String(fd.get('name') ?? '').trim(),
+        address: String(fd.get('address') ?? '').trim(),
+        suburb: String(fd.get('suburb') ?? '').trim(),
+        date: String(fd.get('date') ?? '').trim(),
+        phone: String(fd.get('phone') ?? '').trim(),
+      };
+
+      if (!payload.name) return showError('Name is required.');
+      if (!payload.address) return showError('Street address is required.');
+      if (!payload.suburb) return showError('Pick your suburb.');
+      if (!payload.date) return showError('Pick a date.');
+      if (!payload.phone) return showError('Phone number is required.');
+
+      submitBtn.disabled = true;
+      submitLabel.textContent = 'Sending…';
+
+      try {
+        const res = await fetch('/api/book', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          showError(data.error ?? 'Something went wrong. Please try again.');
+          submitBtn.disabled = false;
+          submitLabel.textContent = 'Send my booking request →';
+          return;
+        }
+
+        // Update local availability from server.
+        if (data.availability) {
+          availability = data.availability;
+          updateSuburbCards();
+        }
+
+        // Render confirmation.
+        const firstName = payload.name.split(/\s+/)[0] || payload.name;
+        confirmEl.querySelector<HTMLElement>('[data-confirmation-name]')!.textContent = firstName;
+        confirmEl.querySelector<HTMLElement>('[data-confirmation-suburb]')!.textContent = data.booking.suburb;
+        confirmEl.querySelector<HTMLElement>('[data-confirmation-date]')!.textContent = data.booking.dateLabel;
+        confirmEl.classList.remove('hidden');
+        form.reset();
+        populateDates('');
+        submitBtn.disabled = false;
+        submitLabel.textContent = 'Send my booking request →';
+        confirmEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch {
+        showError('Network error. Please try again.');
+        submitBtn.disabled = false;
+        submitLabel.textContent = 'Send my booking request →';
+      }
+    });
+
+    document.querySelector<HTMLButtonElement>('[data-confirmation-reset]')?.addEventListener(
+      'click',
+      () => {
+        confirmEl.classList.add('hidden');
+        form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        (document.getElementById('bf-name') as HTMLInputElement | null)?.focus();
+      },
+    );
+  }
+</script>

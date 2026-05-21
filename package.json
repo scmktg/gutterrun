@@ -13,6 +13,7 @@
   "dependencies": {
     "astro": "^4.16.18",
     "@astrojs/tailwind": "^5.1.4",
+    "@astrojs/node": "^8.3.4",
     "tailwindcss": "^3.4.17"
   }
 }
